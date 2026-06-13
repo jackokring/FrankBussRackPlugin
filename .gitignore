@@ -1,3 +1,6 @@
 plugin.*
 dist/
 build/
+# bear -- make
+# for Zed editor syntax handling
+compile_commands.json
