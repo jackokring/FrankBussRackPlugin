@@ -1,27 +1,23 @@
 {
-  "slug": "FrankBuss",
+  "slug": "UnofficialFrank",
   "version": "2.0.3",
   "license": "BSD-2-Clause",
-  "name": "Frank Buss",
-  "author": "Frank Buss",
-  "authorEmail": "fb@frank-buss.de",
-  "pluginUrl": "https://github.com/FrankBuss/FrankBussRackPlugin/blob/master/README.md",
-  "authorUrl": "http://www.frank-buss.de",
-  "manualUrl": "https://github.com/FrankBuss/FrankBussRackPlugin/blob/master/README.md",
-  "sourceUrl": "https://github.com/FrankBuss/FrankBussRackPlugin",
-  "donateUrl": "https://www.paypal.me/frankbuss",
+  "name": "Unofficial Frank",
+
+  "author": "Various People",
+  "authorEmail": "jacko@kring.co.uk",
+  "donateUrl": "https://github.com/jackokring/UnofficialFrank/blob/master/authors.md",
+  "authorUrl": "https://github.com/jackokring/UnofficialFrank/blob/master/authors.md",
+
+  "pluginUrl": "https://github.com/jackokring/UnofficialFrank/blob/master/README.md",
+  "manualUrl": "https://github.com/jackokring/UnofficialFrank/blob/master/README.md",
+  "sourceUrl": "https://github.com/jackokring/UnofficialFrank",
   "modules": [
     {
       "slug": "Formula",
       "name": "Formula",
       "description": "Formula for CV and audio",
       "tags": ["Utility", "Polyphonic"]
-    },
-    {
-      "slug": "Shaker",
-      "name": "Shaker",
-      "description": "Shake your Rack",
-      "tags": ["Visual"]
     }
   ]
 }

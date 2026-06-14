@@ -2,6 +2,11 @@
 
 A formula module for VCV Rack, by Frank Buss, based on BokontepByteBeatMachine.
 
+Additionally, extra functionality written by Simon Jackson provides extra functions and variables.
+
+- `c` - the polyphony channel (0 to 15).
+- sloppy equality testing for numbers closer than a difference of 1.
+
 This module provides 4 inputs: w, x, y and z. In the text field you can write a
 formula for the output. For example `x+y` would be a simple adder.
 
@@ -165,20 +170,3 @@ real-exponent = [e|E] [+|-] [0-9]+
 
 I wrote the formula library in 2001, here is the original page with a function
 plotter as another example: http://www.frank-buss.de/formula/index.html
-
-# Porting old FrankBussFormula .vcv files to the new plugin
-If you have a patch file which uses the old FrankBussFormula plugin, you have to rename the internal name. Open your vcv file in an editor and search for these lines:
-```
-      "plugin": "FrankBussFormula",
-      "model": "FrankBussFormula",
-```
-and replace it with these lines:
-```
-      "plugin": "FrankBuss",
-      "model": "Formula",
-```
-If you have Perl installed (free for all operating systems), you can enter these 2 lines from a console to convert all your .vcv files in the current directoy:
-```
-perl -i -pe 's/"plugin": "FrankBussFormula"/"plugin": "FrankBuss"/g' *.vcv
-perl -i -pe 's/"model": "FrankBussFormula"/"model": "Formula"/g' *.vcv
-```
