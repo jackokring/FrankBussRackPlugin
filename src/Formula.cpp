@@ -73,6 +73,10 @@ struct FrankBussFormulaModule : Module {
 
 	// new
 	float* formulaC[MAX_TEXT_COUNT] = { NULL }; // channel index
+	float* formulaF[MAX_TEXT_COUNT] = { NULL }; // frequency
+
+	// locals but time delayed for breaking loops of reference
+	float freqLast[16] = { 0.0f };
 
 	FrankBussFormulaModule() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
@@ -121,6 +125,7 @@ struct FrankBussFormulaModule : Module {
 		if (compiled) {
 			for (int c = 0; c < channels; c++) {
 				try {
+				    float freq = freqLast[c];
 					// get inputs
 					float w = inputs[W_INPUT].getVoltage(c);
 					float x = inputs[X_INPUT].getVoltage(c);
@@ -130,7 +135,7 @@ struct FrankBussFormulaModule : Module {
 					// knob
 					float k = params[KNOB_PARAM].getValue();
 
-					auto fn = [this, c, w, x, y, z, k](TextFieldType idx) {
+					auto fn = [this, c, w, x, y, z, k, freq](TextFieldType idx) {
 						// set all variables
 						*formulaP[idx] = phase[c];
 						*formulaK[idx] = k;
@@ -142,16 +147,18 @@ struct FrankBussFormulaModule : Module {
 
 						// new
 						*formulaC[idx] = c;// assign channel index to formulaC
+						*formulaF[idx] = freq; // frquency
 					};
 
 					fn(TEXT);
-
 					if (freqFormulaEnabled) {
 						fn(FREQ);
-						float freq = evalFormula(freqFormula);
+						freq = evalFormula(freqFormula);
+						freqLast[c] = freq;// delay for next cycle
 						phase[c] += freq * args.sampleTime;
 						if (phase[c] > 1.0f) phase[c] = fmodf(phase[c], 1.0f);
 					}
+
 					float val = evalFormula(formula);
 					if (doclamp) val = clamp(val, -5.0f, 5.0f);
 					outputs[FORMULA_OUTPUT].setVoltage(val, c);
@@ -206,6 +213,7 @@ struct FrankBussFormulaModule : Module {
 
 		// new
 		formula.setVariable("c", 0);// channel index
+		formula.setVariable("f", 0);// frequency (delayed by a sample)
 
 		formula.setExpression(expr);
 	}
@@ -244,6 +252,8 @@ struct FrankBussFormulaModule : Module {
 
 					// new
 					formulaC[idx] = formula.getVariableAddress("c");
+					formulaF[idx] = formula.getVariableAddress("f");
+
 				};
 
 				fn(TEXT, formula);
