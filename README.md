@@ -7,7 +7,10 @@ Experimental nightly builds only for now. Doc format classic TBD.
 - [X] `par(p)` is for parabolic phase
 - [X] sloppy equality and inequality testing
 - [X] removed shaker
-- [X] optimized using function closures 
+- [X] optimized using function closures
+- [ ] `m` is for set poly many outs
+- [ ] new-ish front panel layout
+- [ ] maybe reduce HP a little
 
 # VCV Rack Modules by Varoius People
 

@@ -1,4 +1,5 @@
 #include "UnofficialFrank.hpp"
+#include "app/common.hpp"
 #include <cmath>
 #include "formula/Formula.h"
 
@@ -346,6 +347,8 @@ struct FormulaTextField : LedDisplayTextField {
 	}
 };
 
+#define WIDTH_MODULE 6
+
 struct FrankBussFormulaWidget : ModuleWidget {
 	FormulaTextField* textField;
 	FormulaTextField* freqField;
@@ -354,11 +357,7 @@ struct FrankBussFormulaWidget : ModuleWidget {
 		setModule(module);
 
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/formula.svg")));
-
-		addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-		addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+		screws(this, WIDTH_MODULE);
 
 		LedDisplay* textDisplay = createWidget<LedDisplay>(mm2px(Vec(3, 13)));
 		textDisplay->box.size = mm2px(Vec(85, 51));
