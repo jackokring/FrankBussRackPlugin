@@ -1,6 +1,15 @@
 #include "UnofficialFrank.hpp"
 #include "formula/Formula.h"
 
+//============================================
+// Enum reporting front and centre
+//============================================
+enum TextFieldType {
+	TEXT,
+	FREQ,
+	MAX_TEXT_COUNT
+};
+
 struct FrankBussFormulaModule : Module {
 	enum ParamIds {
 		KNOB_PARAM,
@@ -53,16 +62,16 @@ struct FrankBussFormulaModule : Module {
 	//============================================
 	// variable pointers
 	//============================================
-	float* formulaP[2] = {NULL, NULL};
-	float* formulaK[2] = {NULL, NULL};
-	float* formulaB[2] = {NULL, NULL};
-	float* formulaW[2] = {NULL, NULL};
-	float* formulaX[2] = {NULL, NULL};
-	float* formulaY[2] = {NULL, NULL};
-	float* formulaZ[2] = {NULL, NULL};
+	float* formulaP[MAX_TEXT_COUNT] = { NULL };
+	float* formulaK[MAX_TEXT_COUNT] = { NULL };
+	float* formulaB[MAX_TEXT_COUNT] = { NULL };
+	float* formulaW[MAX_TEXT_COUNT] = { NULL };
+	float* formulaX[MAX_TEXT_COUNT] = { NULL };
+	float* formulaY[MAX_TEXT_COUNT] = { NULL };
+	float* formulaZ[MAX_TEXT_COUNT] = { NULL };
 
 	// new
-	float* formulaC[2] = {NULL, NULL};// channel index
+	float* formulaC[MAX_TEXT_COUNT] = { NULL }; // channel index
 
 	FrankBussFormulaModule() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
@@ -120,7 +129,7 @@ struct FrankBussFormulaModule : Module {
 					// knob
 					float k = params[KNOB_PARAM].getValue();
 
-					auto fn = [this](int idx, int c, float w, float x, float y, float z, float k) {
+					auto fn = [this, c, w, x, y, z, k](TextFieldType idx) {
 						// set all variables
 						*formulaP[idx] = phase[c];
 						*formulaK[idx] = k;
@@ -134,10 +143,10 @@ struct FrankBussFormulaModule : Module {
 						*formulaC[idx] = c;// assign channel index to formulaC
 					};
 
-					fn(0, c, w, x, y, z, k);
+					fn(TEXT);
 
 					if (freqFormulaEnabled) {
-						fn(1, c, w, x, y, z, k);
+						fn(FREQ);
 						float freq = evalFormula(freqFormula);
 						phase[c] += freq * args.sampleTime;
 						if (phase[c] > 1.0f) phase[c] -= 1.0f;
@@ -223,7 +232,7 @@ struct FrankBussFormulaModule : Module {
 				//============================================
 				// variable pointer assignments for DSP fill
 				//============================================
-				auto fn = [this](int idx, Formula formula) {
+				auto fn = [this](TextFieldType idx, Formula formula) {
 					formulaP[idx] = formula.getVariableAddress("p");
 					formulaK[idx] = formula.getVariableAddress("k");
 					formulaB[idx] = formula.getVariableAddress("b");
@@ -236,8 +245,8 @@ struct FrankBussFormulaModule : Module {
 					formulaC[idx] = formula.getVariableAddress("c");
 				};
 
-				fn(0, formula);
-				if(freqFormulaEnabled) fn(1, freqFormula);
+				fn(TEXT, formula);
+				if(freqFormulaEnabled) fn(FREQ, freqFormula);
 
 				compiled = true;
 			} catch (exception& e) {
@@ -283,11 +292,6 @@ struct FrankBussFormulaModule : Module {
 		freqDirty = true;
 	}
 
-};
-
-enum TextFieldType {
-	TEXT,
-	FREQ
 };
 
 struct FormulaTextField : LedDisplayTextField {
