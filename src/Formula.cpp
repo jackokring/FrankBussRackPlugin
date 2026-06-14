@@ -347,7 +347,7 @@ struct FormulaTextField : LedDisplayTextField {
 	}
 };
 
-#define WIDTH_MODULE 6
+#define WIDTH_MODULE 18
 
 struct FrankBussFormulaWidget : ModuleWidget {
 	FormulaTextField* textField;
