@@ -200,7 +200,7 @@ float Evaluator::eval()
 {
 	if (m_actions.size() == 0) return 0;
 	m_numberStack.clear();
-	printf("que: %d", (int) m_actions.size());
+	//printf("que: %d", (int) m_actions.size());
 	for (int i = 0; i < (int) m_actions.size(); i++) {
 	    // GDB say this line fails SEGFAULT
 		/*
