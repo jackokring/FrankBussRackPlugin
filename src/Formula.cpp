@@ -1,5 +1,6 @@
 #include "UnofficialFrank.hpp"
 #include "app/ModuleWidget.hpp"
+#include "engine/Port.hpp"
 #include "widget/Widget.hpp"
 #include <cmath>
 #include <cstdio>
@@ -82,7 +83,7 @@ struct FrankBussFormulaModule : Module {
 	float* formulaF[MAX_TEXT_COUNT] = { NULL }; // frequency
 
 	// locals but time delayed for breaking loops of reference
-	float freqLast[16] = { 0.0f };
+	float freqLast[PORT_MAX_CHANNELS] = { 0.0f };
 
 	FrankBussFormulaModule() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
@@ -169,7 +170,7 @@ struct FrankBussFormulaModule : Module {
 					}
 
 					// OR ...
-					float val = evalFormula(formula);
+					float val = 0.0f;//evalFormula(formula);
 					if (doclamp) val = clamp(val, -5.0f, 5.0f);
 					outputs[FORMULA_OUTPUT].setVoltage(val, c);
 				} catch (MathError&) {
