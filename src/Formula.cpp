@@ -165,7 +165,7 @@ struct FrankBussFormulaModule : Module {
 						// SO ...
 						freq = evalFormula(freqFormula);
 						freqLast[c] = freq;// delay for next cycle
-						phase[c] += freq * args.sampleTime;
+						phase[c] += freq * deltaTime;
 						if (phase[c] > 1.0f) phase[c] = fmodf(phase[c], 1.0f);
 					}
 
