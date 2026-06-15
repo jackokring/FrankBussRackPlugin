@@ -17,9 +17,6 @@
 #include <math.h>
 #include <float.h>
 
-#include "Exception.h"
-#include "Exception.h"
-
 using namespace std;
 
 typedef float(*NoArgumentFunction)();

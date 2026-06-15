@@ -9,8 +9,7 @@
  */
 
 #include "Token.h"
-#include <iostream>
-
+#include "Exception.h"
 
 void OperatorToken::eval(Parser& parser)
 {

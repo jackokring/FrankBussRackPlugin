@@ -10,6 +10,7 @@
 
 #include "Token.h"
 #include "Parser.h"
+#include "Exception.h"
 
 #include <math.h>
 #include <time.h>

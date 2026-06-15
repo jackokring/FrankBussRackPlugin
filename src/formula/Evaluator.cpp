@@ -9,6 +9,8 @@
  */
 
 #include "Evaluator.h"
+#include "Exception.h"
+#include <cstdio>
 
 using namespace std;
 
@@ -198,8 +200,13 @@ float Evaluator::eval()
 {
 	if (m_actions.size() == 0) return 0;
 	m_numberStack.clear();
-	// GDB say this line fails
-	for (int i = 0; i < (int) m_actions.size(); i++) m_actions[i]->run(m_numberStack);
+	for (int i = 0; i < (int) m_actions.size(); i++) {
+	    // GDB say this line fails SEGFAULT
+		printf("Action %d: %%s\n", i);//, typeid(*m_actions[i]).name());
+		// occasional /lib/x86_64-linux-gnu/libc.so.6
+		// tried p 1 7 all single alphanumeric, so not variable specific
+		m_actions[i]->run(m_numberStack);
+	}
 	return m_numberStack.pop();
 }
 
