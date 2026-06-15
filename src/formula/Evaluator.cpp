@@ -218,8 +218,8 @@ Thread 1 "Rack" received signal SIGABRT, Aborted.
 
 void Evaluator::removeAllActions()
 {
-	m_actions.clear();
-	deleteActions(); // delete after clearing
+	deleteActions(); // delete
+	m_actions.clear(); // no stale pointers
 }
 
 void Evaluator::setVariable(std::string name, float value)

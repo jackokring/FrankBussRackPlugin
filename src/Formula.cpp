@@ -85,7 +85,7 @@ struct FrankBussFormulaModule : Module {
 	// locals but time delayed for breaking loops of reference
 	float freqLast[PORT_MAX_CHANNELS] = { 0.0f };
 
-	FrankBussFormulaModule() {
+	FrankBussFormulaModule() : compiled(false) {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configButton(B_MINUS_1_PARAM, "Variable 'b': -1");
 		configButton(B_0_PARAM, "Variable 'b': 0");
