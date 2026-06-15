@@ -361,7 +361,7 @@ void lcd(Widget* w, FrankBussFormulaModule* m, Vec pos, Vec size,
 		w->addChild(field);
 }
 
-#define WIDTH_MODULE 10
+#define WIDTH_MODULE 11
 
 struct FrankBussFormulaWidget : ModuleWidget {
 	FormulaTextField* textField;

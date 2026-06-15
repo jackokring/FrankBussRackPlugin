@@ -14,7 +14,7 @@ void init(Plugin *p) {
 
 // make those precise in hp and u rack units
 float hp(float w, bool mhp) {
-	return (mhp ? w - 1 : w) * RACK_GRID_WIDTH;
+	return (mhp ? w - 2 : w) * RACK_GRID_WIDTH;
 }
 
 float u2(float h, bool mhp) {
