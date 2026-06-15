@@ -119,7 +119,7 @@ struct FrankBussFormulaModule : Module {
 		*formulaZ[idx] = z;
 
 		// new
-		*formulaC[idx] = c;// assign channel index to formulaC
+		*formulaC[idx] = (float)c; // assign channel index to formulaC
 		*formulaF[idx] = freq; // frquency
 	}
 

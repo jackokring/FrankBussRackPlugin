@@ -186,7 +186,8 @@ Evaluator::~Evaluator()
 {
 	deleteActions();
 	for (auto it = m_variables.begin(); it != m_variables.end(); it++) {
-		delete it->second;
+	    // why pointer to float as value better and faster and no heap allocation
+		//delete it->second;
 	}
 }
 
@@ -210,7 +211,7 @@ Thread 1 "Rack" received signal SIGABRT, Aborted.
 		 */
 		// tried p 1 7 all single alphanumeric, so not variable specific
 		// even commented the line that supposed gave an error
-		//m_actions[i]->run(m_numberStack);
+		m_actions[i]->run(m_numberStack);
 	}
 	return m_numberStack.pop();
 }
@@ -225,7 +226,7 @@ void Evaluator::setVariable(std::string name, float value)
 {
 	auto i = m_variables.find(name);
 	if (i == m_variables.end()) {
-		m_variables[name] = new float;
+		m_variables[name] = 0.0f; //new float;
 	}
 	*getVariableAddress(name) = value;
 }
@@ -239,7 +240,7 @@ float* Evaluator::getVariableAddress(std::string name)
 {
 	auto i = m_variables.find(name);
 	if (i != m_variables.end()) {
-		return i->second;
+		return &i->second;
 	} else {
 		throw VariableNotFound(name);
 	}

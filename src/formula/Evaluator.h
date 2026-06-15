@@ -169,7 +169,7 @@ private:
 	void deleteActions();
 
 	vector<Action*> m_actions;
-	map<std::string, float*> m_variables;
+	map<std::string, float> m_variables;
 };
 
 
