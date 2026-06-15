@@ -198,6 +198,7 @@ float Evaluator::eval()
 {
 	if (m_actions.size() == 0) return 0;
 	m_numberStack.clear();
+	// GDB say this line fails
 	for (int i = 0; i < (int) m_actions.size(); i++) m_actions[i]->run(m_numberStack);
 	return m_numberStack.pop();
 }

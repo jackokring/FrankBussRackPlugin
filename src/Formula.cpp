@@ -159,12 +159,14 @@ struct FrankBussFormulaModule : Module {
 
 					if (freqFormulaEnabled) {
 						processVariables(FREQ, c, k, radiobutton, w, x, y, z, freq);
+						// SO ...
 						freq = evalFormula(freqFormula);
 						freqLast[c] = freq;// delay for next cycle
 						phase[c] += freq * args.sampleTime;
 						if (phase[c] > 1.0f) phase[c] = fmodf(phase[c], 1.0f);
 					}
 
+					// OR ...
 					float val = evalFormula(formula);
 					if (doclamp) val = clamp(val, -5.0f, 5.0f);
 					outputs[FORMULA_OUTPUT].setVoltage(val, c);
