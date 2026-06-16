@@ -133,3 +133,24 @@ void knobSmall(ModuleWidget* w, Module* m, Vec pos, int paramId, const char* nam
 	w->addParam(createParamCentered<RoundSmallBlackKnob>(pos + alignCtl, m, paramId));
 	w->addChild(new LabelWidget(name, pos + alignCtl + Vec(0, -18.0f), 0));
 }
+
+// Optimized [5/5] Padé Approximant for tan(x)
+// High precision within the standard digital filter warping range (-1.5 < x < 1.5)
+float fast_tan_pade55(float x) {
+    float x2 = x * x;
+    float num = x * (945.0f + x2 * (-105.0f + x2));
+    float den = 945.0f + x2 * (-420.0f + 15.0f * x2);
+    return num / den;
+}
+
+void setFilter(float fc, float fs, float* f1, float* f2) {
+    fc = fmin(fc, fs / 2);
+	*f1	 = fast_tan_pade55(M_PI * fc / fs);
+	*f2   = 1 / (1 + *f1);
+}
+
+float processFilter(float in, float* buff, float f1, float f2) {
+	float out = (f1 * in + *buff) * f2;
+	*buff = f1 * (in - out) + out;
+	return out;//lpf default
+}

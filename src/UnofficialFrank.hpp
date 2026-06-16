@@ -21,3 +21,6 @@ void button(ModuleWidget* w, Module* m, Vec pos, int buttId, int lightId, const 
 void okNo(ModuleWidget* w, Module* m, Vec pos, int portId, const char* name);
 void knob(ModuleWidget* w, Module* m, Vec pos, int paramId, const char* name);
 void knobSmall(ModuleWidget* w, Module* m, Vec pos, int paramId, const char* name);
+
+void setFilter(float fc, float fs, float* f1, float* f2);
+float processFilter(float in, float* buff, float f1, float f2);

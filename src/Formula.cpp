@@ -24,6 +24,7 @@ struct FrankBussFormulaModule : Module {
 		B_0_PARAM,
 		B_1_PARAM,
 		CHANNELS_PARAM,
+		LOWPASS_PARAM,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -84,9 +85,15 @@ struct FrankBussFormulaModule : Module {
 	float formulaC;
 	float formulaF;
 	float formulaM;
+	float formulaL;
 
 	// locals but time delayed for breaking loops of reference
 	float freqLast[PORT_MAX_CHANNELS] = { 0.0f };
+
+	// impulse filter based on glitch of parse error?
+	float filters[PORT_MAX_CHANNELS] = { 0.0f };
+	float filterF1 = 0.0f;
+	float filterF2 = 0.0f;
 
 	FrankBussFormulaModule() : compiled(false) {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
@@ -95,6 +102,7 @@ struct FrankBussFormulaModule : Module {
 		configButton(B_1_PARAM, "Variable 'b': 1");
 		configParam(KNOB_PARAM, -1.0f, 1.0f, 0.0f, "Variable 'k'");
 		configParam(CHANNELS_PARAM, 0.5f, PORT_MAX_CHANNELS + 0.5f, 1.0f, "Channels 'm'");
+		configParam(LOWPASS_PARAM, -4.0f, 4.0f, 0.0f, "Lowpass 'l'");
 		configButton(CLAMP_PARAM, "Clamp to -5V/+5V");
 
 		configLight(ERROR_LIGHT, "Status:\n  green light: ok\n  red blinking light: error\n  -------------------------------\n ");
@@ -132,6 +140,8 @@ struct FrankBussFormulaModule : Module {
 		int channelsY = max(inputs[Y_INPUT].getChannels(), 1);
 		int channelsZ = max(inputs[Z_INPUT].getChannels(), 1);
 
+		float lowpass = powf(2.0f, params[LOWPASS_PARAM].getValue());
+
 		if (compiled && compiling.try_lock()) {
 			for (int c = 0; c < channels; c++) {
 				try {
@@ -147,6 +157,7 @@ struct FrankBussFormulaModule : Module {
 					// new
 					formulaC = (float)(c + 1); // assign channel index * something
 					formulaF = freqLast[c]; // frquency
+					formulaL = freqLast[c] * lowpass;
 
 					if (freqFormulaEnabled) {
 						// SO ...
@@ -158,6 +169,8 @@ struct FrankBussFormulaModule : Module {
 
 					// OR ...
 					float val = evalFormula(formula);
+					setFilter(formulaL, args.sampleRate, &filterF1, &filterF2);
+					val = processFilter(val, &filters[c], filterF1, filterF2);
 					if (doclamp) val = clamp(val, -5.0f, 5.0f);
 					outputs[FORMULA_OUTPUT].setVoltage(val, c);
 				} catch (MathError&) {
@@ -171,7 +184,11 @@ struct FrankBussFormulaModule : Module {
 			compiling.unlock();
 		} else {
 			for (int c = 0; c < channels; c++) {
-				outputs[FORMULA_OUTPUT].setVoltage(0, c);
+				float val = 0.0f;
+				// good for impulse glitch control
+    			setFilter(freqLast[c] * lowpass, args.sampleRate, &filterF1, &filterF2);
+    			val = processFilter(val, &filters[c], filterF1, filterF2);
+				outputs[FORMULA_OUTPUT].setVoltage(val, c);
 			}
 		}
 		outputs[FORMULA_OUTPUT].setChannels(channels);
@@ -217,6 +234,7 @@ struct FrankBussFormulaModule : Module {
 		formula.setVariable("c", &formulaC);// channel index
 		formula.setVariable("f", &formulaF);// frequency (delayed by a sample)
 		formula.setVariable("m", &formulaM);// number of channels-ish
+		formula.setVariable("l", &formulaL);
 
 		formula.setExpression(expr);
 	}
@@ -366,7 +384,8 @@ struct FrankBussFormulaWidget : ModuleWidget {
 
 		knob(this, module, hpu2(6.0f, 4.85f), FrankBussFormulaModule::KNOB_PARAM, "KNOB");
 
-		knobSmall(this, module, hpu2(7.75f, 4.4f), FrankBussFormulaModule::CHANNELS_PARAM, "POLY");
+		knobSmall(this, module, hpu2(4.2f, 4.4f), FrankBussFormulaModule::CHANNELS_PARAM, "POLY");
+		knobSmall(this, module, hpu2(7.7f, 4.4f), FrankBussFormulaModule::LOWPASS_PARAM, "LPF");
 
 		okNo(this, module, hpu2(0.3f, 3.8f), FrankBussFormulaModule::ERROR_LIGHT, "E");
 

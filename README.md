@@ -23,6 +23,7 @@ Simplicity is often the key to a good module.
 - [X] `c` is for channel number (1 to 16)
 - [X] `m` is for set poly out (1 to 16) ... ish!
 - [X] `f` is for frequency (delayed by one sample)
+- [X] `l` is for lowpass filter (delayed by one sample, 'f' relative)
 - [X] `par(p)` is for parabolic phase `4*p*(1-p)`
 - [X] fuzzy equality/inequality (within 1 V)
 - [X] optimized and threaded
