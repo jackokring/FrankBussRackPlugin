@@ -32,7 +32,7 @@ void Formula::setExpression(std::string expression)
 }
 
 
-void Formula::setVariable(std::string name, float value)
+void Formula::setVariable(std::string name, float* value)
 {
 	m_parser->setVariable(name, value);
 }

@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstdio>
 #include "formula/Formula.h"
+#include "formula/Exception.h"
 
 //============================================
 // Enum reporting front and centre
@@ -70,17 +71,17 @@ struct FrankBussFormulaModule : Module {
 	//============================================
 	// variable pointers
 	//============================================
-	float* formulaP[MAX_TEXT_COUNT] = { NULL };
-	float* formulaK[MAX_TEXT_COUNT] = { NULL };
-	float* formulaB[MAX_TEXT_COUNT] = { NULL };
-	float* formulaW[MAX_TEXT_COUNT] = { NULL };
-	float* formulaX[MAX_TEXT_COUNT] = { NULL };
-	float* formulaY[MAX_TEXT_COUNT] = { NULL };
-	float* formulaZ[MAX_TEXT_COUNT] = { NULL };
+	float formulaP;
+	float formulaK;
+	float formulaB;
+	float formulaW;
+	float formulaX;
+	float formulaY;
+	float formulaZ;
 
-	// new
-	float* formulaC[MAX_TEXT_COUNT] = { NULL }; // channel index
-	float* formulaF[MAX_TEXT_COUNT] = { NULL }; // frequency
+	//new
+	float formulaC;
+	float formulaF;
 
 	// locals but time delayed for breaking loops of reference
 	float freqLast[PORT_MAX_CHANNELS] = { 0.0f };
@@ -111,22 +112,6 @@ struct FrankBussFormulaModule : Module {
 		return channels;
 	}
 
-	void processVariables(TextFieldType idx,
-		int c, float k, float radiobutton, float w, float x, float y, float z, float freq) {
-		// set all variables
-		*formulaP[idx] = phase[c];
-		*formulaK[idx] = k;
-		*formulaB[idx] = radiobutton;
-		*formulaW[idx] = w;
-		*formulaX[idx] = x;
-		*formulaY[idx] = y;
-		*formulaZ[idx] = z;
-
-		// new
-		*formulaC[idx] = (float)c; // assign channel index to formulaC
-		*formulaF[idx] = freq; // frquency
-	}
-
 	void process(const ProcessArgs &args) override {
 		if (clampTrigger.process(params[CLAMP_PARAM].getValue())) {
 			doclamp = !doclamp;
@@ -148,29 +133,29 @@ struct FrankBussFormulaModule : Module {
 		if (compiled && compiling.try_lock()) {
 			for (int c = 0; c < channels; c++) {
 				try {
-				    float freq = freqLast[c];
-					// get inputs
-					float w = inputs[W_INPUT].getVoltage(c);
-					float x = inputs[X_INPUT].getVoltage(c);
-					float y = inputs[Y_INPUT].getVoltage(c);
-					float z = inputs[Z_INPUT].getVoltage(c);
+				    // set variables
+					formulaP = phase[c];
+					formulaK = params[KNOB_PARAM].getValue();
+					formulaB = radiobutton;
+					formulaW = inputs[W_INPUT].getVoltage(c);
+					formulaX = inputs[X_INPUT].getVoltage(c);
+					formulaY = inputs[Y_INPUT].getVoltage(c);
+					formulaZ = inputs[Z_INPUT].getVoltage(c);
 
-					// knob
-					float k = params[KNOB_PARAM].getValue();
-
-					processVariables(TEXT, c, k, radiobutton, w, x, y, z, freq);
+					// new
+					formulaC = (float)c; // assign channel index to formulaC
+					formulaF = freqLast[c]; // frquency
 
 					if (freqFormulaEnabled) {
-						processVariables(FREQ, c, k, radiobutton, w, x, y, z, freq);
 						// SO ...
-						freq = evalFormula(freqFormula);
+						auto freq = evalFormula(freqFormula);
 						freqLast[c] = freq;// delay for next cycle
 						phase[c] += freq * deltaTime;
 						if (phase[c] > 1.0f) phase[c] = fmodf(phase[c], 1.0f);
 					}
 
 					// OR ...
-					float val = 0.0f;//evalFormula(formula);
+					float val = evalFormula(formula);
 					if (doclamp) val = clamp(val, -5.0f, 5.0f);
 					outputs[FORMULA_OUTPUT].setVoltage(val, c);
 				} catch (MathError&) {
@@ -208,24 +193,27 @@ struct FrankBussFormulaModule : Module {
 		lights[B_1_LIGHT].value = (radiobutton == 1.0f);
 	}
 
+	float pi = M_PI;
+	float e = M_E;
+
 	void parseFormula(Formula& formula, std::string expr) {
 		//============================================
 		// variable definition defaults
 		//============================================
-		formula.setVariable("pi", M_PI);
-		formula.setVariable("e", M_E);
+		formula.setVariable("pi", &pi);
+		formula.setVariable("e", &e);
 
-		formula.setVariable("p", 0);
-		formula.setVariable("k", 0);
-		formula.setVariable("b", 0);
-		formula.setVariable("w", 0);
-		formula.setVariable("x", 0);
-		formula.setVariable("y", 0);
-		formula.setVariable("z", 0);
+		formula.setVariable("p", &formulaP);
+		formula.setVariable("k", &formulaK);
+		formula.setVariable("b", &formulaB);
+		formula.setVariable("w", &formulaW);
+		formula.setVariable("x", &formulaX);
+		formula.setVariable("y", &formulaY);
+		formula.setVariable("z", &formulaZ);
 
 		// new
-		formula.setVariable("c", 0);// channel index
-		formula.setVariable("f", 0);// frequency (delayed by a sample)
+		formula.setVariable("c", &formulaC);// channel index
+		formula.setVariable("f", &formulaF);// frequency (delayed by a sample)
 
 		formula.setExpression(expr);
 	}
@@ -235,20 +223,6 @@ struct FrankBussFormulaModule : Module {
 		float val = formula.eval();
 		if (!isfinite(val) || isnan(val)) val = 0.0f;
 		return val;
-	}
-
-	void compileVariables(TextFieldType idx, Formula formula) {
-		formulaP[idx] = formula.getVariableAddress("p");
-		formulaK[idx] = formula.getVariableAddress("k");
-		formulaB[idx] = formula.getVariableAddress("b");
-		formulaW[idx] = formula.getVariableAddress("w");
-		formulaX[idx] = formula.getVariableAddress("x");
-		formulaY[idx] = formula.getVariableAddress("y");
-		formulaZ[idx] = formula.getVariableAddress("z");
-
-		// new
-		formulaC[idx] = formula.getVariableAddress("c");
-		formulaF[idx] = formula.getVariableAddress("f");
 	}
 
 	void compile()
@@ -264,8 +238,6 @@ struct FrankBussFormulaModule : Module {
 					parseFormula(freqFormula, freqField);
 					freqFormulaEnabled = true;
 				}
-				compileVariables(TEXT, formula);
-				if(freqFormulaEnabled) compileVariables(FREQ, freqFormula);
 				compiled = true;
 			} catch (exception& e) {
 				printf("formula exception: %s\n", e.what());

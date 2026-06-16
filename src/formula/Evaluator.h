@@ -159,7 +159,7 @@ public:
 	void addAction(Action* action);
 	float eval();
 	void removeAllActions();
-	void setVariable(std::string name, float value);
+	void setVariable(std::string name, float* value);
 	float getVariable(std::string name);
 	float* getVariableAddress(std::string name);
 
@@ -169,7 +169,7 @@ private:
 	void deleteActions();
 
 	vector<Action*> m_actions;
-	map<std::string, float> m_variables;
+	map<std::string, float*> m_variables;
 };
 
 

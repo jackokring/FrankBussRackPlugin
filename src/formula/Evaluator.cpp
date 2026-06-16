@@ -222,13 +222,12 @@ void Evaluator::removeAllActions()
 	m_actions.clear(); // no stale pointers
 }
 
-void Evaluator::setVariable(std::string name, float value)
+void Evaluator::setVariable(std::string name, float* value)
 {
 	auto i = m_variables.find(name);
 	if (i == m_variables.end()) {
-		m_variables[name] = 0.0f; //new float;
+		m_variables[name] = value; // Module class vars*
 	}
-	*getVariableAddress(name) = value;
 }
 
 float Evaluator::getVariable(std::string name)
@@ -240,7 +239,7 @@ float* Evaluator::getVariableAddress(std::string name)
 {
 	auto i = m_variables.find(name);
 	if (i != m_variables.end()) {
-		return &i->second;
+		return i->second;
 	} else {
 		throw VariableNotFound(name);
 	}

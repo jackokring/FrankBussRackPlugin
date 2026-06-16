@@ -11,7 +11,7 @@
 #ifndef FORMULA_H
 #define FORMULA_H
 
-#include "Exception.h"
+#include <string>
 
 using namespace std;
 
@@ -24,7 +24,7 @@ public:
 	Formula(std::string formula);
 	~Formula();
 	void setExpression(std::string expression);
-	void setVariable(std::string name, float value);
+	void setVariable(std::string name, float* value);
 	float* getVariableAddress(std::string name);
 	void setFunction(std::string name, float(*function)());
 	void setFunction(std::string name, float(*function)(float));

@@ -35,7 +35,7 @@ public:
 	Parser(std::string expression);
 	~Parser();
 	void setExpression(std::string expression);
-	void setVariable(std::string name, float value) {
+	void setVariable(std::string name, float* value) {
 		m_evaluator.setVariable(name, value);
 	}
 	float* getVariableAddress(std::string name) {
@@ -47,7 +47,7 @@ public:
 	NoArgumentFunction getNoArgumentFunction(std::string name);
 	OneArgumentFunction getOneArgumentFunction(std::string name);
 	TwoArgumentsFunction getTwoArgumentsFunction(std::string name);
-	
+
 	std::string getPostfix() {
 		return m_postfix;
 	}
