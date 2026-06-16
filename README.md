@@ -23,8 +23,8 @@ Simplicity is often the key to a good module.
 - [X] `c` is for channel number
 - [X] `f` is for frequency (delayed by one sample)
 - [X] `par(p)` is for parabolic phase `4*p*(1-p)`
-- [X] fuzzy equality/inequality (linear fuzzy within 1 V)
+- [X] fuzzy equality/inequality (within 1 V)
 - [X] optimized and threaded
 - [ ] `m` is for set poly many outs
-- [ ] new-ish front panel layout
+- [X] new front panel layout
 - [X] 11 HP

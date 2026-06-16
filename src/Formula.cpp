@@ -354,19 +354,19 @@ struct FrankBussFormulaWidget : ModuleWidget {
 		lcd(this, module, hpu2(0.5f, 1.0f), hpu2(10.0f, 2.5f), textField, TEXT, true);
 		lcd(this, module, hpu2(1.7f, 3.7f), hpu2(8.8f, 0.5f), freqField, FREQ, false);
 
-		button(this, module, hpu2(1.0f, 5.0f), FrankBussFormulaModule::B_MINUS_1_PARAM
+		button(this, module, hpu2(1.0f, 4.9f), FrankBussFormulaModule::B_MINUS_1_PARAM
 			, FrankBussFormulaModule::B_MINUS_1_LIGHT, "-1");
 		button(this, module, hpu2(2.0f, 4.5f), FrankBussFormulaModule::B_0_PARAM
 			, FrankBussFormulaModule::B_0_LIGHT, "0");
-		button(this, module, hpu2(3.0f, 5.0f), FrankBussFormulaModule::B_1_PARAM
+		button(this, module, hpu2(3.0f, 4.9f), FrankBussFormulaModule::B_1_PARAM
 			, FrankBussFormulaModule::B_1_LIGHT, "1");
 
-		knob(this, module, hpu2(6.0f, 4.75f), FrankBussFormulaModule::KNOB_PARAM, "KNOB");
+		knob(this, module, hpu2(6.0f, 4.85f), FrankBussFormulaModule::KNOB_PARAM, "KNOB");
 
-		okNo(this, module, hpu2(0.3f, 3.75f), FrankBussFormulaModule::ERROR_LIGHT, "ERROR");
+		okNo(this, module, hpu2(0.3f, 3.8f), FrankBussFormulaModule::ERROR_LIGHT, "E");
 
-		button(this, module, hpu2(9.0f, 5.0f), FrankBussFormulaModule::CLAMP_PARAM
-			, FrankBussFormulaModule::CLAMP_LIGHT, "CLAMP");
+		button(this, module, hpu2(9.0f, 4.9f), FrankBussFormulaModule::CLAMP_PARAM
+			, FrankBussFormulaModule::CLAMP_LIGHT, "CLMP");
 
 		// bottomn row of ports
 		port(this, module, hpu2(1.0f, 5.5f), FrankBussFormulaModule::W_INPUT, true, "W");
