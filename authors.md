@@ -1,12 +1,14 @@
-# Formula
+# VCV Rack Modules by Varoius People
 
-## Frank Buss
+## Formula
+
+### Frank Buss (Principal Author)
 
 - **Donate:** [PayPal](https://www.paypal.me/frankbuss)
 - **Website:** [frank-buss.de](https://www.frank-buss.de)
 - **Email:** fb@frank-buss.de
 
-## Simon Jackson
+### Simon Jackson (Modernization Lead)
 
 - **Donate:** TBD
 - **Website:** [kring.co.uk](https://www.kring.co.uk)
