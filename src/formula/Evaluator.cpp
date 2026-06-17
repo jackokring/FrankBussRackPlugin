@@ -39,7 +39,7 @@ void NumberStack::push(float value)
 
 void Action::checkTopStackElement(NumberStack& numberStack)
 {
-	if (!isfinite(numberStack.top()) || isnan(numberStack.top())) throw MathError();
+	//if (!isfinite(numberStack.top()) || isnan(numberStack.top())) throw MathError();
 }
 
 NumberAction::NumberAction(std::string value)
@@ -68,9 +68,9 @@ void DivAction::run(NumberStack& numberStack)
 {
 	float op2 = numberStack.pop();
 	float op1 = numberStack.pop();
-	if (op2 == 0.0f) {
+	/* if (op2 == 0.0f) {
 		throw MathError();
-	}
+	} */
 	numberStack.push(op1 / op2);
 	checkTopStackElement(numberStack);
 }
@@ -142,7 +142,7 @@ void AndAction::run(NumberStack& numberStack)
 {
 	float op2 = numberStack.pop();
 	float op1 = numberStack.pop();
-	numberStack.push(op1 && op2);
+	numberStack.push(op1 * op2);
 	checkTopStackElement(numberStack);
 }
 
@@ -150,7 +150,7 @@ void OrAction::run(NumberStack& numberStack)
 {
 	float op2 = numberStack.pop();
 	float op1 = numberStack.pop();
-	numberStack.push(op1 || op2);
+	numberStack.push(op1 + op2 - op1 * op2);
 	checkTopStackElement(numberStack);
 }
 

@@ -191,13 +191,13 @@ struct FrankBussFormulaModule : Module {
 					// reduce preictor load by predicates
 					val = doclamp * clamp(val, -5.0f, 5.0f) + val * !doclamp;
 					outputs[FORMULA_OUTPUT].setVoltage(val, c);
-				} catch (MathError&) {
+					/* } catch (MathError&) {
 					// ignore math errors, e.g. division by zero
 					float val = 0.0f;
 					// good for impulse glitch control
 					setFilter(freqLast[c] * lowpass, args.sampleRate, &filterF1, &filterF2);
 					val = processFilter(val, &filters[c], filterF1, filterF2);
-					outputs[FORMULA_OUTPUT].setVoltage(val, c);
+					outputs[FORMULA_OUTPUT].setVoltage(val, c); */
 				} catch (exception&) {
 					// for all other exceptions, set compiled to false, e.g. VariableNotFound
 					compiled = false;

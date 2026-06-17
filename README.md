@@ -42,9 +42,12 @@ Simplicity is often the key to a good module.
 - [X] `cbrt(x)` is for cube root (a favorite distortion)
 - [X] added monadic `/` (monadic `/` is for prefix reciprocal)
 - [X] fuzzy equality/inequality (within 1 V)
+- [X] fuzzy `&` and `|`
+- [X] diabled unnecessary exception code
 - [X] optimized and threaded
 - [X] new front panel layout
 - [X] 11 HP
+- [ ] SIMD branch (compiles, no cigar)
 
 ### Notes
 
