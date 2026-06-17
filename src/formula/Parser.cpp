@@ -57,11 +57,6 @@ float ParseResolve(float index)
 	    - 1 + (int)(index + 0.5f)) % PORT_MAX_CHANNELS];
 }
 
-float ParseSub(float phase)
-{
-	return phase / 2.0f - 0.5f;
-}
-
 Parser::Parser(std::string expression)
 {
    	//============================================

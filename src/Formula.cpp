@@ -69,6 +69,7 @@ struct FrankBussFormulaModule : Module {
 	dsp::SchmittTrigger bMinus1Trigger;
 	dsp::SchmittTrigger b0Trigger;
 	dsp::SchmittTrigger b1Trigger;
+	int mux;
 
 	//============================================
 	// variable pointers
@@ -116,34 +117,42 @@ struct FrankBussFormulaModule : Module {
 	}
 
 	void process(const ProcessArgs &args) override {
-		if (clampTrigger.process(params[CLAMP_PARAM].getValue())) {
-			doclamp = !doclamp;
-		}
-		if (bMinus1Trigger.process(params[B_MINUS_1_PARAM].getValue())) {
-			radiobutton = -1.0f;
-		}
-		if (b0Trigger.process(params[B_0_PARAM].getValue())) {
-			radiobutton = 0.0f;
-		}
-		if (b1Trigger.process(params[B_1_PARAM].getValue())) {
-			radiobutton = 1.0f;
+	    //====================================================
+	    // DSP critical section, lower dynamic if count
+	    //====================================================
+	    // lower branch predict loading
+	    if((mux++ & 0xff) == 0) {
+			if (clampTrigger.process(params[CLAMP_PARAM].getValue())) {
+				doclamp = !doclamp;
+			}
+			if (bMinus1Trigger.process(params[B_MINUS_1_PARAM].getValue())) {
+				radiobutton = -1.0f;
+			}
+			if (b0Trigger.process(params[B_0_PARAM].getValue())) {
+				radiobutton = 0.0f;
+			}
+			if (b1Trigger.process(params[B_1_PARAM].getValue())) {
+				radiobutton = 1.0f;
+			}
 		}
 
 		float deltaTime = args.sampleTime;
 
-		// evaluate frequency and output formula
-
+		// evaluate channels
 		formulaM = (params[CHANNELS_PARAM].getValue() + 0.5f);
-		int channels = (int)formulaM;
+		int channels = (((int)formulaM - 1) & 0xf) + 1;
 
 		int channelsW = max(inputs[W_INPUT].getChannels(), 1);
 		int channelsX = max(inputs[X_INPUT].getChannels(), 1);
 		int channelsY = max(inputs[Y_INPUT].getChannels(), 1);
 		int channelsZ = max(inputs[Z_INPUT].getChannels(), 1);
 
+		// evaluate lowpass filter multiplier of frequency
 		float lowpass = powf(2.0f, params[LOWPASS_PARAM].getValue());
 
 		if (compiled && compiling.try_lock()) {
+// sort of as if using que(x) for crosstalk then ...
+#pragma GCC ivdep
 			for (int c = 0; c < channels; c++) {
 				try {
 				    // set variables
@@ -163,19 +172,19 @@ struct FrankBussFormulaModule : Module {
 					formulaL = freqLast[c] * lowpass;
 
 					if (freqFormulaEnabled) {
-						// SO ...
 						auto freq = evalFormula(freqFormula);
 						freqLast[c] = freq;// delay for next cycle
 						phase[c] += freq * deltaTime;
 						// branch predict worse case fail?
-						phase[c] = fmodf(phase[c], 2.0f);
+						// there's an instruction bit mask for that
+						phase[c] = 2.0f * modff(phase[c] * 0.5f, &sub);
 					}
 
-					// OR ...
 					float val = evalFormula(formula);
 					setFilter(formulaL, args.sampleRate, &filterF1, &filterF2);
 					val = processFilter(val, &filters[c], filterF1, filterF2);
-					if (doclamp) val = clamp(val, -5.0f, 5.0f);
+					// reduce preictor load by predicates
+					val = doclamp * clamp(val, -5.0f, 5.0f) + val * !doclamp;
 					outputs[FORMULA_OUTPUT].setVoltage(val, c);
 				} catch (MathError&) {
 					// ignore math errors, e.g. division by zero
@@ -191,6 +200,7 @@ struct FrankBussFormulaModule : Module {
 			}
 			compiling.unlock();
 		} else {
+#pragma GCC ivdep
 			for (int c = 0; c < channels; c++) {
 				float val = 0.0f;
 				// good for impulse glitch control
@@ -204,14 +214,17 @@ struct FrankBussFormulaModule : Module {
 
 		// Blink light at 1Hz
 		blinkPhase += deltaTime;
-		if (blinkPhase >= 1.0f)
-			blinkPhase -= 1.0f;
-		if (compiled) {
-			lights[OK_LIGHT].value = 0;
-			lights[ERROR_LIGHT].value = 1;
-		} else {
-			lights[OK_LIGHT].value = (blinkPhase < 0.5f) ? 1.0f : 0.0f;
-			lights[ERROR_LIGHT].value = 0;
+		// reduce branch prediction overhead
+		if(((mux + 0x7f) & 0xff) == 0) {
+    		if (blinkPhase >= 1.0f)
+    			blinkPhase -= 1.0f;
+    		if (compiled) {
+    			lights[OK_LIGHT].value = 0;
+    			lights[ERROR_LIGHT].value = 1;
+    		} else {
+    			lights[OK_LIGHT].value = (blinkPhase < 0.5f) ? 1.0f : 0.0f;
+    			lights[ERROR_LIGHT].value = 0;
+    		}
 		}
 
 		lights[CLAMP_LIGHT].value = (doclamp);
@@ -248,11 +261,15 @@ struct FrankBussFormulaModule : Module {
 		formula.setExpression(expr);
 	}
 
+	float jump[2] = { 0.0f, 0.0f };
+
 	float evalFormula(Formula& formula) {
 		// eval
 		float val = formula.eval();
-		if (!isfinite(val) || isnan(val)) val = 0.0f;
-		return val;
+		// it appears to have less if statements than the original
+		jump[0] = val * isfinite(val);
+		// now finite or NaN and jump[1] is 0.0f
+		return jump[isnan(jump[0])];
 	}
 
 	void compile()
