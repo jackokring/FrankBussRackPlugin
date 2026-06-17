@@ -14,7 +14,7 @@ Simplicity is often the key to a good module.
 
 ## Frank Buss
 
-![alt text](docs/formula.png "Formula")
+![Formula](docs/formula.png "Formula")
 
 [Formula for CV and audio](docs/formula.md)
 
@@ -47,7 +47,9 @@ Simplicity is often the key to a good module.
 - [X] optimized and threaded
 - [X] new front panel layout
 - [X] 11 HP
-- [ ] SIMD branch (compiles, no cigar)
+- [ ] SIMD branch (compiles, no cigar, the black screen no seen)
+
+![Unofficial Formula](docs/unofficial-formula.png "Unofficial Formula")
 
 ### Notes
 
