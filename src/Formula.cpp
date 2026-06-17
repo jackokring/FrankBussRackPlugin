@@ -86,6 +86,7 @@ struct FrankBussFormulaModule : Module {
 	float formulaF;
 	float formulaM;
 	float formulaL;
+	float formulaS;
 
 	// locals but time delayed for breaking loops of reference
 	float freqLast[PORT_MAX_CHANNELS] = { 0.0f };
@@ -146,7 +147,9 @@ struct FrankBussFormulaModule : Module {
 			for (int c = 0; c < channels; c++) {
 				try {
 				    // set variables
-					formulaP = phase[c];
+					float sub;
+					formulaP = modff(phase[c], &sub);
+					formulaS = 2.0f * (sub - 0.5f);
 					formulaK = params[KNOB_PARAM].getValue();
 					formulaB = radiobutton;
 					formulaW = inputs[W_INPUT].getVoltage(c % channelsW);
@@ -164,7 +167,8 @@ struct FrankBussFormulaModule : Module {
 						auto freq = evalFormula(freqFormula);
 						freqLast[c] = freq;// delay for next cycle
 						phase[c] += freq * deltaTime;
-						if (phase[c] > 1.0f) phase[c] = fmodf(phase[c], 1.0f);
+						// branch predict worse case fail?
+						phase[c] = fmodf(phase[c], 2.0f);
 					}
 
 					// OR ...
@@ -238,7 +242,8 @@ struct FrankBussFormulaModule : Module {
 		formula.setVariable("c", &formulaC);// channel index
 		formula.setVariable("f", &formulaF);// frequency (delayed by a sample)
 		formula.setVariable("m", &formulaM);// number of channels-ish
-		formula.setVariable("l", &formulaL);
+		formula.setVariable("l", &formulaL);// LFO
+		formula.setVariable("s", &formulaS);// sub oscillation bipolar
 
 		formula.setExpression(expr);
 	}
