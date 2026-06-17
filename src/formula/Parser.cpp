@@ -13,23 +13,24 @@
 #include "Exception.h"
 #include "../UnofficialFrank.hpp"
 #include "engine/Port.hpp"
+#include "simd/Vector.hpp"
 
 #include <climits>
 #include <cmath>
 #include <math.h>
 #include <random>
 
-float ParserTanp(float x)
+float_4 ParserTanp(float_4 x)
 {
 	return fast_tan_pade55(x * M_PI);
 }
 
-float ParserSinp(float x)
+float_4 ParserSinp(float_4 x)
 {
 	return fast_sin_pade55(x * M_PI);
 }
 
-float ParserCosp(float x)
+float_4 ParserCosp(float_4 x)
 {
 	return fast_cos_pade55(x * M_PI);
 }
@@ -41,81 +42,98 @@ std::exponential_distribution<float> expo;
 std::poisson_distribution<int> poisson(1.0f);
 std::linear_congruential_engine<unsigned int, 3, 561, 0> noiseEngine;
 
-float ParserNoise(float gain)
+float_4 ParserNoise(float_4 gain)
 {
 	return noise(noiseEngine) * gain;
 }
 
-float ParserExpo(float gain)
+float_4 ParserExpo(float_4 gain)
 {
 	return expo(noiseEngine) * gain;
 }
 
-float ParserPoisson(float gain)
+float_4 ParserPoisson(float_4 gain)
 {
 	return poisson(noiseEngine) * gain;
 }
 
-float ParserUni(float max)
+float_4 ParserUni(float_4 max)
 {
 	return ((float)noiseEngine() / UINT_MAX) * max;
 }
 
-float ParserPar(float phase)
+float_4 ParserPar(float_4 phase)
 {
 	return 4.0f * phase * (1.0f - phase);
 }
 
 // ring buffer
-float ring[PORT_MAX_CHANNELS] = { 0.0f };
+float_4 ring[PORT_MAX_CHANNELS / 4] = { 0.0f };
 int head = 0;
 int tail = 0;
 
-float ParserRing(float value)
+float_4 ParserRing(float_4 value)
 {
 	ring[head] = value;
-	head = (head + 1) % PORT_MAX_CHANNELS;
+	head = (head + 1) % (PORT_MAX_CHANNELS / 4);
 	return value;
 }
 
-float ParserResolve(float index)
+float_4 ParserResolve(float_4 gain)
 {
-	return ring[(unsigned int)((tail = (tail + 1) % PORT_MAX_CHANNELS)
-	    - 1 + (int)(index + 0.5f)) % PORT_MAX_CHANNELS];
+	return ring[tail++] * gain;
 }
 
 Parser::Parser(std::string expression)
 {
    	//============================================
-	// functions
+	// functions (ggod enough for audio work)
 	//============================================
-	setFunction("acos", acosf);
-	setFunction("asin", asinf);
-	setFunction("atan", atanf);
-	setFunction("atan2", atan2f);
-	setFunction("cos", cosf);
-	setFunction("cosh", coshf);
-	setFunction("exp", expf);
-	setFunction("abs", fabsf);
-	setFunction("mod", fmodf);
-	setFunction("log", logf);
-	setFunction("log2", log2f);
-	setFunction("log10", log10f);
-	setFunction("pow", powf);
-	setFunction("sin", sinf);
-	setFunction("sinh", sinhf);
-	setFunction("tan", tanf);
-	setFunction("tanh", tanhf);
-	setFunction("sqrt", sqrtf);
-	setFunction("ceil", ceilf);
-	setFunction("floor", floorf);
+	setFunction("acos", [](float_4 x) {
+	    return atan2(sqrt(fmax(1.0f - x * x, 0.0f)), x);
+	});
+	setFunction("asin", [](float_4 x) {
+	    return atan2(x, sqrt(fmax(1.0f - x * x, 0.0f)));
+	});
+	setFunction("atan", atan);
+	setFunction("atan2", atan2);
+	setFunction("cos", cos);
+	setFunction("cosh", [](float_4 x) {
+	    auto y = exp(x);
+		return 0.5f * (y + rcp(y));
+	});
+	setFunction("exp", exp);
+	setFunction("abs", fabs);
+	setFunction("mod", fmod);
+	setFunction("log", log);
+	setFunction("log2", log2);
+	setFunction("log10", log10);
+	setFunction("pow", pow);
+	setFunction("sin", sin);
+	setFunction("sinh", [](float_4 x) {
+	    auto y = exp(x);
+		return 0.5f * (y - rcp(y));
+	});
+	setFunction("tan", tan);
+	setFunction("tanh", [](float_4 x) {
+	    auto y = exp(x);
+	    auto z = rcp(y);
+		return (y - z) / (y + z);
+	});
+	setFunction("sqrt", sqrt);
+	setFunction("ceil", ceil);
+	setFunction("floor", floor);
 	// let's keep it float people!
-	setFunction("max", fmaxf);
-	setFunction("min", fminf);
+	setFunction("max", fmax);
+	setFunction("min", fmin);
 
 	// oldies
-	setFunction("expm1", expm1f);
-	setFunction("log1p", log1pf);
+	setFunction("expm1", [](float_4 x) {
+	    return float_4(expm1(x[0]), expm1(x[1]), expm1(x[2]), expm1(x[3]));
+	});
+	setFunction("log1p", [](float_4 x) {
+	    return float_4(log1p(x[0]), log1p(x[1]), log1p(x[2]), log1p(x[3]));
+	});
 
 	// new
 	setFunction("par", ParserPar);// Parabolic
@@ -129,7 +147,9 @@ Parser::Parser(std::string expression)
 	setFunction("tanp", ParserTanp);// Tan pade 5/5
 	setFunction("sinp", ParserSinp);// Sin pade 5/5
 	setFunction("cosp", ParserCosp);// Cos pade 5/5
-	setFunction("cbrt", cbrtf);// Cube root
+	setFunction("cbrt", [](float_4 x) {
+	    return float_4(cbrt(x[0]), cbrt(x[1]), cbrt(x[2]), cbrt(x[3]));
+	});// Cube root
 
 	setExpression(expression);
 }
@@ -366,17 +386,17 @@ void Parser::setExpression(std::string expression)
 	if (m_postfix.size() > 0) m_postfix = m_postfix.substr(1);
 }
 
-void Parser::setFunction(std::string name, float(*function)())
+void Parser::setFunction(std::string name, float_4(*function)())
 {
 	m_noArgumentFunctions[name] = function;
 }
 
-void Parser::setFunction(std::string name, float(*function)(float))
+void Parser::setFunction(std::string name, float_4(*function)(float_4))
 {
 	m_oneArgumentFunctions[name] = function;
 }
 
-void Parser::setFunction(std::string name, float(*function)(float, float))
+void Parser::setFunction(std::string name, float_4(*function)(float_4, float_4))
 {
 	m_twoArgumentsFunctions[name] = function;
 }

@@ -1,11 +1,14 @@
 #include "UnofficialFrank.hpp"
 #include "app/ModuleWidget.hpp"
 #include "engine/Port.hpp"
+#include "simd/Vector.hpp"
 #include "widget/Widget.hpp"
 #include <cmath>
 #include <cstdio>
 #include "formula/Formula.h"
 #include "formula/Exception.h"
+
+using namespace simd;
 
 //============================================
 // Enum reporting front and centre
@@ -63,7 +66,7 @@ struct FrankBussFormulaModule : Module {
 	bool doclamp = true;
 	bool freqFormulaEnabled = false;
 	float radiobutton = 0.0f;
-	float phase[PORT_MAX_CHANNELS];
+	float_4 phase[PORT_MAX_CHANNELS / 4];
 
 	dsp::SchmittTrigger clampTrigger;
 	dsp::SchmittTrigger bMinus1Trigger;
@@ -74,29 +77,29 @@ struct FrankBussFormulaModule : Module {
 	//============================================
 	// variable pointers
 	//============================================
-	float formulaP;
-	float formulaK;
-	float formulaB;
-	float formulaW;
-	float formulaX;
-	float formulaY;
-	float formulaZ;
+	float_4 formulaP;
+	float_4 formulaK;
+	float_4 formulaB;
+	float_4 formulaW;
+	float_4 formulaX;
+	float_4 formulaY;
+	float_4 formulaZ;
 
 	//new
-	float formulaC;
-	float formulaF;
-	float formulaM;
-	float formulaL;
-	float formulaS;
-	float formulaR;
+	float_4 formulaC;
+	float_4 formulaF;
+	float_4 formulaM;
+	float_4 formulaL;
+	float_4 formulaS;
+	float_4 formulaR;
 
 	// locals but time delayed for breaking loops of reference
-	float freqLast[PORT_MAX_CHANNELS] = { 0.0f };
+	float_4 freqLast[PORT_MAX_CHANNELS / 4] = { 0.0f };
 
 	// impulse filter based on glitch of parse error?
-	float filters[PORT_MAX_CHANNELS] = { 0.0f };
-	float filterF1 = 0.0f;
-	float filterF2 = 0.0f;
+	float_4 filters[PORT_MAX_CHANNELS / 4] = { 0.0f };
+	float_4 filterF1 = 0.0f;
+	float_4 filterF2 = 0.0f;
 
 	FrankBussFormulaModule() : compiled(false) {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
@@ -141,10 +144,11 @@ struct FrankBussFormulaModule : Module {
 		float deltaTime = args.sampleTime;
 
 		// evaluate channels
-		formulaM = params[CHANNELS_PARAM].getValue();
+		float chan = params[CHANNELS_PARAM].getValue();
 		// already have channels from formulaM integer part
-		int channels = (int)(formulaM + 0.5f);// in range [1, 16]
+		int channels = (int)(chan + 0.5f);// in range [1, 16]
 		// bug precesion completed level C
+		int blocks = (channels + 3) / 4;
 
 		int channelsW = max(inputs[W_INPUT].getChannels(), 1);
 		int channelsX = max(inputs[X_INPUT].getChannels(), 1);
@@ -157,47 +161,72 @@ struct FrankBussFormulaModule : Module {
 		if (compiled && compiling.try_lock()) {
 // sort of as if using que(x) for crosstalk then ...
 #pragma GCC ivdep
-			for (int c = 0; c < channels; c++) {
+			for (int b = 0; b < blocks; blocks++) {
 				try {
 				    // set variables
-					float sub;
-					formulaP = modff(phase[c], &sub);
+					float_4 sub;
+					formulaM = chan;
+					formulaP = float_4(modff(phase[b][0], &sub[0]),
+					    modff(phase[b][1], &sub[1]),
+					    modff(phase[b][2], &sub[2]),
+					    modff(phase[b][3], &sub[3]));
 					formulaS = 2.0f * (sub - 0.5f);
 					formulaK = params[KNOB_PARAM].getValue();
 					formulaB = radiobutton;
-					formulaW = inputs[W_INPUT].getVoltage(c % channelsW);
-					formulaX = inputs[X_INPUT].getVoltage(c % channelsX);
-					formulaY = inputs[Y_INPUT].getVoltage(c % channelsY);
-					formulaZ = inputs[Z_INPUT].getVoltage(c % channelsZ);
+					formulaW = float_4(inputs[W_INPUT].getVoltage((4 * b) % channelsW),
+					    inputs[W_INPUT].getVoltage((4 * b + 1) % channelsW),
+					    inputs[W_INPUT].getVoltage((4 * b + 2) % channelsW),
+					    inputs[W_INPUT].getVoltage((4 * b + 3) % channelsW));
+					formulaX = float_4(inputs[X_INPUT].getVoltage((4 * b) % channelsX),
+					    inputs[X_INPUT].getVoltage((4 * b + 1) % channelsX),
+					    inputs[X_INPUT].getVoltage((4 * b + 2) % channelsX),
+					    inputs[X_INPUT].getVoltage((4 * b + 3) % channelsX));
+					formulaY = float_4(inputs[Y_INPUT].getVoltage((4 * b) % channelsY),
+					    inputs[Y_INPUT].getVoltage((4 * b + 1) % channelsY),
+					    inputs[Y_INPUT].getVoltage((4 * b + 2) % channelsY),
+					    inputs[Y_INPUT].getVoltage((4 * b + 3) % channelsY));
+					formulaZ = float_4(inputs[Z_INPUT].getVoltage((4 * b) % channelsZ),
+					    inputs[Z_INPUT].getVoltage((4 * b + 1) % channelsZ),
+					    inputs[Z_INPUT].getVoltage((4 * b + 2) % channelsZ),
+					    inputs[Z_INPUT].getVoltage((4 * b + 3) % channelsZ));
 
 					// new
-					formulaC = (float)(c + 1); // assign channel index * something
-					formulaF = freqLast[c]; // frquency
-					formulaL = freqLast[c] * lowpass;
+					formulaC = float_4(4 * b + 1, 4 * b + 2, 4 * b + 3, 4 * b + 4); // assign channel index * something
+					formulaF = freqLast[b]; // frquency
+					formulaL = freqLast[b] * lowpass;
 					formulaR = args.sampleRate;
 
 					if (freqFormulaEnabled) {
 						auto freq = evalFormula(freqFormula);
-						freqLast[c] = freq;// delay for next cycle
-						phase[c] += freq * deltaTime;
+						freqLast[b] = freq;// delay for next cycle
+						phase[b] += freq * deltaTime;
 						// branch predict worse case fail?
 						// there's an instruction bit mask for that
-						phase[c] = 2.0f * modff(phase[c] * 0.5f, &sub);
+						phase[b] = 2.0f * float_4(modff(phase[b][0] * 0.5f, &sub[0]),
+							modff(phase[b][1] * 0.5f, &sub[1]),
+							modff(phase[b][2] * 0.5f, &sub[2]),
+							modff(phase[b][3] * 0.5f, &sub[3]));
 					}
 
-					float val = evalFormula(formula);
+					float_4 val = evalFormula(formula);
 					setFilter(formulaL, args.sampleRate, &filterF1, &filterF2);
-					val = processFilter(val, &filters[c], filterF1, filterF2);
+					val = processFilter(val, &filters[b], filterF1, filterF2);
 					// reduce preictor load by predicates
 					val = doclamp * clamp(val, -5.0f, 5.0f) + val * !doclamp;
-					outputs[FORMULA_OUTPUT].setVoltage(val, c);
-				} catch (MathError&) {
+					outputs[FORMULA_OUTPUT].setVoltage(val[0], 4 * b);
+					outputs[FORMULA_OUTPUT].setVoltage(val[1], 4 * b + 1);
+					outputs[FORMULA_OUTPUT].setVoltage(val[2], 4 * b + 2);
+					outputs[FORMULA_OUTPUT].setVoltage(val[3], 4 * b + 3);
+					/* } catch (MathError&) {
 					// ignore math errors, e.g. division by zero
-					float val = 0.0f;
+					float_4 val = 0.0f;
 					// good for impulse glitch control
-					setFilter(freqLast[c] * lowpass, args.sampleRate, &filterF1, &filterF2);
-					val = processFilter(val, &filters[c], filterF1, filterF2);
-					outputs[FORMULA_OUTPUT].setVoltage(val, c);
+					setFilter(freqLast[b] * lowpass, args.sampleRate, &filterF1, &filterF2);
+					val = processFilter(val, &filters[b], filterF1, filterF2);
+					outputs[FORMULA_OUTPUT].setVoltage(val[0], 4 * b);
+					outputs[FORMULA_OUTPUT].setVoltage(val[1], 4 * b + 1);
+					outputs[FORMULA_OUTPUT].setVoltage(val[2], 4 * b + 2);
+					outputs[FORMULA_OUTPUT].setVoltage(val[3], 4 * b + 3); */
 				} catch (exception&) {
 					// for all other exceptions, set compiled to false, e.g. VariableNotFound
 					compiled = false;
@@ -206,12 +235,15 @@ struct FrankBussFormulaModule : Module {
 			compiling.unlock();
 		} else {
 #pragma GCC ivdep
-			for (int c = 0; c < channels; c++) {
-				float val = 0.0f;
+			for (int b = 0; b < blocks; b++) {
+				float_4 val = 0.0f;
 				// good for impulse glitch control
-    			setFilter(freqLast[c] * lowpass, args.sampleRate, &filterF1, &filterF2);
-    			val = processFilter(val, &filters[c], filterF1, filterF2);
-				outputs[FORMULA_OUTPUT].setVoltage(val, c);
+    			setFilter(freqLast[b] * lowpass, args.sampleRate, &filterF1, &filterF2);
+    			val = processFilter(val, &filters[b], filterF1, filterF2);
+				outputs[FORMULA_OUTPUT].setVoltage(val[0], 4 * b);
+				outputs[FORMULA_OUTPUT].setVoltage(val[1], 4 * b + 1);
+				outputs[FORMULA_OUTPUT].setVoltage(val[2], 4 * b + 2);
+				outputs[FORMULA_OUTPUT].setVoltage(val[3], 4 * b + 3);
 			}
 		}
 		outputs[FORMULA_OUTPUT].setChannels(channels);
@@ -238,8 +270,8 @@ struct FrankBussFormulaModule : Module {
 		lights[B_1_LIGHT].value = (radiobutton == 1.0f);
 	}
 
-	float pi = M_PI;
-	float e = M_E;
+	float_4 pi = M_PI;
+	float_4 e = M_E;
 
 	void parseFormula(Formula& formula, std::string expr) {
 		//============================================
@@ -267,15 +299,13 @@ struct FrankBussFormulaModule : Module {
 		formula.setExpression(expr);
 	}
 
-	float jump[2] = { 0.0f, 0.0f };
-
-	float evalFormula(Formula& formula) {
+	float_4 evalFormula(Formula& formula) {
 		// eval
-		float val = formula.eval();
+		float_4 val = formula.eval();
 		// it appears to have less if statements than the original
-		jump[0] = val * isfinite(val);
+		val = val * float_4(isfinite(val[0]), isfinite(val[1]), isfinite(val[2]), isfinite(val[3]));
 		// now finite or NaN and jump[1] is 0.0f
-		return jump[isnan(jump[0])];
+		return ifelse(float_4(isnan(val[0]), isnan(val[1]), isnan(val[2]), isnan(val[3])), 0.0f, val);
 	}
 
 	void compile()

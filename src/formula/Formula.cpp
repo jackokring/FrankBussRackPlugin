@@ -32,40 +32,38 @@ void Formula::setExpression(std::string expression)
 }
 
 
-void Formula::setVariable(std::string name, float* value)
+void Formula::setVariable(std::string name, float_4* value)
 {
 	m_parser->setVariable(name, value);
 }
 
 
-float* Formula::getVariableAddress(std::string name)
+float_4* Formula::getVariableAddress(std::string name)
 {
 	return m_parser->getVariableAddress(name);
 }
 
 
-void Formula::setFunction(std::string name, float(*function)())
+void Formula::setFunction(std::string name, float_4(*function)())
 {
 	m_parser->setFunction(name, function);
 }
 
 
 
-void Formula::setFunction(std::string name, float(*function)(float))
+void Formula::setFunction(std::string name, float_4(*function)(float_4))
 {
 	m_parser->setFunction(name, function);
 }
 
 
 
-void Formula::setFunction(std::string name, float(*function)(float, float))
+void Formula::setFunction(std::string name, float_4(*function)(float_4, float_4))
 {
 	m_parser->setFunction(name, function);
 }
 
-
-
-float Formula::eval()
+float_4 Formula::eval()
 {
 	return m_parser->eval();
 }

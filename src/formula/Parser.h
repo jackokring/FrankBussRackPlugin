@@ -15,8 +15,10 @@
 #include <string>
 #include <vector>
 #include <stack>
+#include <rack.hpp>
 
 using namespace std;
+using namespace rack::simd;
 
 class Token;
 
@@ -37,10 +39,10 @@ public:
 	Parser(std::string expression);
 	~Parser();
 	void setExpression(std::string expression);
-	void setVariable(std::string name, float* value) {
+	void setVariable(std::string name, float_4* value) {
 		m_evaluator.setVariable(name, value);
 	}
-	float* getVariableAddress(std::string name) {
+	float_4* getVariableAddress(std::string name) {
 		return m_evaluator.getVariableAddress(name);
 	}
 	void setFunction(std::string name, NoArgumentFunction function);
@@ -53,7 +55,7 @@ public:
 	std::string getPostfix() {
 		return m_postfix;
 	}
-	float eval() {
+	float_4 eval() {
 		return m_evaluator.eval();
 	}
 

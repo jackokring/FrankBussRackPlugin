@@ -1,6 +1,7 @@
 #include "UnofficialFrank.hpp"
 #include "componentlibrary.hpp"
 #include "helpers.hpp"
+#include "simd/Vector.hpp"
 #include <cstring>
 
 Plugin *pluginInstance;
@@ -137,35 +138,35 @@ void knobSmall(ModuleWidget* w, Module* m, Vec pos, int paramId, const char* nam
 
 // Optimized [5/5] Padé Approximant for tan(x)
 // High precision within the standard digital filter warping range (-1.5 < x < 1.5)
-float fast_tan_pade55(float x) {
-    float x2 = x * x;
-    float num = x * (945.0f + x2 * (-105.0f + x2));
-    float den = 945.0f + x2 * (-420.0f + 15.0f * x2);
+float_4 fast_tan_pade55(float_4 x) {
+    float_4 x2 = x * x;
+    float_4 num = x * (945.0f + x2 * (-105.0f + x2));
+    float_4 den = 945.0f + x2 * (-420.0f + 15.0f * x2);
     return num / den;
 }
 
-float fast_sin_pade55(float x) {
-    float x2 = x * x;
-    float num = x * (166320.0f + x2 * (-22260.0f + 551.0f * x2));
-    float den = 166320.0f + x2 * (5460.0f + 75.0f * x2);
+float_4 fast_sin_pade55(float_4 x) {
+    float_4 x2 = x * x;
+    float_4 num = x * (166320.0f + x2 * (-22260.0f + 551.0f * x2));
+    float_4 den = 166320.0f + x2 * (5460.0f + 75.0f * x2);
     return num / den;
 }
 
-float fast_cos_pade55(float x) {
-    float x2 = x * x;
-    float num = 1560.0f + x2 * (-610.0f + 22.0f * x2);
-    float den = 1560.0f + x2 * (170.0f + x2);
+float_4 fast_cos_pade55(float_4 x) {
+    float_4 x2 = x * x;
+    float_4 num = 1560.0f + x2 * (-610.0f + 22.0f * x2);
+    float_4 den = 1560.0f + x2 * (170.0f + x2);
     return num / den;
 }
 
-void setFilter(float fc, float fs, float* f1, float* f2) {
+void setFilter(float_4 fc, float fs, float_4* f1, float_4* f2) {
     fc = fmin(fc, fs / 2);
 	*f1	 = fast_tan_pade55(M_PI * fc / fs);
 	*f2   = 1 / (1 + *f1);
 }
 
-float processFilter(float in, float* buff, float f1, float f2) {
-	float out = (f1 * in + *buff) * f2;
+float_4 processFilter(float_4 in, float_4* buff, float_4 f1, float_4 f2) {
+	float_4 out = (f1 * in + *buff) * f2;
 	*buff = f1 * (in - out) + out;
 	return out;//lpf default
 }

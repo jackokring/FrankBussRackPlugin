@@ -16,23 +16,25 @@
 #include <map>
 #include <math.h>
 #include <float.h>
+#include <rack.hpp>
 
 using namespace std;
+using namespace rack::simd;
 
-typedef float(*NoArgumentFunction)();
-typedef float(*OneArgumentFunction)(float);
-typedef float(*TwoArgumentsFunction)(float, float);
+typedef float_4(*NoArgumentFunction)();
+typedef float_4(*OneArgumentFunction)(float_4);
+typedef float_4(*TwoArgumentsFunction)(float_4, float_4);
 
-class NumberStack : public vector<float>
+class NumberStack : public vector<float_4>
 {
 public:
 	NumberStack() : m_size(0) {}
-	float top();
-	float pop();
-	void push(float value);
+	float_4 top();
+	float_4 pop();
+	void push(float_4 value);
 	size_t size() { return m_size; }
 private:
-	vector<float> m_values;
+	vector<float_4> m_values;
 	size_t m_size;
 };
 
@@ -42,8 +44,6 @@ class Action
 public:
 	virtual ~Action() {};
 	virtual void run(NumberStack& numberStack) {};
-protected:
-	void checkTopStackElement(NumberStack& numberStack);
 };
 
 
@@ -163,11 +163,11 @@ class Evaluator
 public:
 	~Evaluator();
 	void addAction(Action* action);
-	float eval();
+	float_4 eval();
 	void removeAllActions();
-	void setVariable(std::string name, float* value);
-	float getVariable(std::string name);
-	float* getVariableAddress(std::string name);
+	void setVariable(std::string name, float_4* value);
+	float_4 getVariable(std::string name);
+	float_4* getVariableAddress(std::string name);
 
 private:
 	NumberStack m_numberStack;
@@ -175,7 +175,7 @@ private:
 	void deleteActions();
 
 	vector<Action*> m_actions;
-	map<std::string, float*> m_variables;
+	map<std::string, float_4*> m_variables;
 };
 
 
@@ -188,7 +188,7 @@ public:
 private:
 	Evaluator* m_evaluator;
 	std::string m_name;
-	float* m_variableAddress;
+	float_4* m_variableAddress;
 };
 
 

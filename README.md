@@ -29,7 +29,7 @@ Simplicity is often the key to a good module.
 - [X] `par(p)` is for parabolic phase `4*p*(1-p)`
 - [X] queing and unquing FIFO to `PORT_MAX_CHANNELS` (crosstalk)
   - [X] `que(x)` is for queuing (`que` evaluates to `x`)
-  - [X] `unq(i)` is for unqueueing (index `i` is tail offset, 0 for tail)
+  - [X] `unq(gain)` is for unqueueing (with `gain` scaling, changed due to SIMD)
 - [X] `expm1(x)` is for `exp(x) - 1` (zero-er DC audio bias)
 - [X] `log1p(x)` is for `log(1 + x)` (zero-er DC audio bias)
 - [X] `nor(gain)` is for normal Gaussian noise

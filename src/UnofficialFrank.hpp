@@ -1,6 +1,7 @@
 #include "rack.hpp"
 
 using namespace rack;
+using namespace simd;
 
 // Forward-declare the Plugin, defined in Template.cpp
 extern Plugin *pluginInstance;
@@ -22,8 +23,8 @@ void okNo(ModuleWidget* w, Module* m, Vec pos, int portId, const char* name);
 void knob(ModuleWidget* w, Module* m, Vec pos, int paramId, const char* name);
 void knobSmall(ModuleWidget* w, Module* m, Vec pos, int paramId, const char* name);
 
-void setFilter(float fc, float fs, float* f1, float* f2);
-float processFilter(float in, float* buff, float f1, float f2);
-float fast_tan_pade55(float x);
-float fast_sin_pade55(float x);
-float fast_cos_pade55(float x);
+void setFilter(float_4 fc, float fs, float_4* f1, float_4* f2);
+float_4 processFilter(float_4 in, float_4* buff, float_4 f1, float_4 f2);
+float_4 fast_tan_pade55(float_4 x);
+float_4 fast_sin_pade55(float_4 x);
+float_4 fast_cos_pade55(float_4 x);
