@@ -25,6 +25,8 @@ class Parser
 	friend class OperatorToken;
 	friend class AddToken;
 	friend class SubToken;
+	friend class MulToken;
+	friend class DivToken;
 	friend class NumberToken;
 	friend class OpenBracketToken;
 	friend class CloseBracketToken;

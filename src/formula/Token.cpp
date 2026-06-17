@@ -206,6 +206,25 @@ void SubToken::eval(Parser& parser)
 	OperatorToken::eval(parser);
 }
 
+void DivToken::eval(Parser& parser)
+{
+	// precondition is in OperatorToken::eval(parser)
+
+	// eval
+	Token* lastToken = parser.peekLastToken();
+	if (dynamic_cast<NumberToken*>(lastToken)
+	        || dynamic_cast<IdentifierToken*>(lastToken)
+	        || dynamic_cast<CloseBracketToken*>(lastToken))
+	{
+		m_action = new DivAction();
+		m_precedence = MulDivPrecedence;
+	} else {
+		m_value = "inv";
+		m_action = new InvAction();
+		m_precedence = NegPrecedence;
+	}
+	OperatorToken::eval(parser);
+}
 
 void AddToken::eval(Parser& parser)
 {
@@ -221,6 +240,24 @@ void AddToken::eval(Parser& parser)
 	} else
 	{
 		// skip unary '+' operator
+		parser.skipToken();
+	}
+}
+
+void MulToken::eval(Parser& parser)
+{
+	// precondition is in OperatorToken::eval(parser)
+
+	// eval
+	Token* lastToken = parser.peekLastToken();
+	if (dynamic_cast<NumberToken*>(lastToken)
+	        || dynamic_cast<IdentifierToken*>(lastToken)
+	        || dynamic_cast<CloseBracketToken*>(lastToken))
+	{
+		OperatorToken::eval(parser);
+	} else
+	{
+		// skip unary '*' operator
 		parser.skipToken();
 	}
 }

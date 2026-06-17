@@ -174,6 +174,12 @@ void NegAction::run(NumberStack& numberStack)
 	checkTopStackElement(numberStack);
 }
 
+void InvAction::run(NumberStack& numberStack)
+{
+	numberStack.push(1.0f / numberStack.pop());
+	checkTopStackElement(numberStack);
+}
+
 void PowerAction::run(NumberStack& numberStack)
 {
 	float op2 = numberStack.pop();

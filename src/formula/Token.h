@@ -83,6 +83,7 @@ class MulToken : public OperatorToken
 {
 public:
 	MulToken() : OperatorToken("*") {}
+	virtual void eval(Parser& parser) override;
 	virtual Action* getAction() override {
 		return new MulAction();
 	}
@@ -95,12 +96,16 @@ class DivToken : public OperatorToken
 {
 public:
 	DivToken() : OperatorToken("/") {}
+	virtual void eval(Parser& parser) override;
 	virtual Action* getAction() override {
-		return new DivAction();
+		return m_action;
 	}
 	virtual int getPrecedence() override {
-		return MulDivPrecedence;
+		return m_precedence;
 	}
+private:
+	Action* m_action;
+	int m_precedence;
 };
 
 class PowerToken : public OperatorToken

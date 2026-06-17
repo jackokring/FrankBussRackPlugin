@@ -24,6 +24,17 @@ float ParserTanp(float x)
 	return fast_tan_pade55(x * M_PI);
 }
 
+float ParserSinp(float x)
+{
+	return fast_sin_pade55(x * M_PI);
+}
+
+float ParserCosp(float x)
+{
+	return fast_cos_pade55(x * M_PI);
+}
+
+
 // randoms
 std::normal_distribution<float> noise;
 std::exponential_distribution<float> expo;
@@ -116,6 +127,8 @@ Parser::Parser(std::string expression)
 	setFunction("poi", ParserPoisson);// Poisson distribution
 
 	setFunction("tanp", ParserTanp);// Tan pade 5/5
+	setFunction("sinp", ParserSinp);// Sin pade 5/5
+	setFunction("cosp", ParserCosp);// Cos pade 5/5
 	setFunction("cbrt", cbrtf);// Cube root
 
 	setExpression(expression);

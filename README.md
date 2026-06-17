@@ -37,7 +37,10 @@ Simplicity is often the key to a good module.
 - [X] `exd(gain)` is for exponential distribution
 - [X] `poi(gain)` is for Poisson distribution
 - [X] `tanp(x)` is for `tan(pi*x)` by fast Pade approximation (5/5)
+- [X] `sinp(x)` is for `sin(pi*x)` by fast Pade approximation (5/5)
+- [X] `cosp(x)` is for `cos(pi*x)` by fast Pade approximation (5/5)
 - [X] `cbrt(x)` is for cube root (a favorite distortion)
+- [X] added monadic `*` and `/` (monadic `/` is for prefix reciprocal)
 - [X] fuzzy equality/inequality (within 1 V)
 - [X] optimized and threaded
 - [X] new front panel layout

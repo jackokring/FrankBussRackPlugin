@@ -146,6 +146,12 @@ public:
 	void run(NumberStack& numberStack) override;
 };
 
+class InvAction : public Action
+{
+public:
+	void run(NumberStack& numberStack) override;
+};
+
 class PowerAction : public Action
 {
 public:

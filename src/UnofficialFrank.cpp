@@ -137,10 +137,24 @@ void knobSmall(ModuleWidget* w, Module* m, Vec pos, int paramId, const char* nam
 
 // Optimized [5/5] Padé Approximant for tan(x)
 // High precision within the standard digital filter warping range (-1.5 < x < 1.5)
-float fast_tan_pade55(float x) {
+inline float fast_tan_pade55(float x) {
     float x2 = x * x;
     float num = x * (945.0f + x2 * (-105.0f + x2));
     float den = 945.0f + x2 * (-420.0f + 15.0f * x2);
+    return num / den;
+}
+
+inline float fast_sin_pade55(float x) {
+    float x2 = x * x;
+    float num = x * (166320.0f + x2 * (-22260.0f + 551.0f * x2));
+    float den = 166320.0f + x2 * (5460.0f + 75.0f * x2);
+    return num / den;
+}
+
+inline float fast_cos_pade55(float x) {
+    float x2 = x * x;
+    float num = 1560.0f + x2 * (-610.0f + 22.0f * x2);
+    float den = 1560.0f + x2 * (170.0f + x2);
     return num / den;
 }
 

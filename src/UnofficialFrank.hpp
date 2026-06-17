@@ -25,3 +25,5 @@ void knobSmall(ModuleWidget* w, Module* m, Vec pos, int paramId, const char* nam
 void setFilter(float fc, float fs, float* f1, float* f2);
 float processFilter(float in, float* buff, float f1, float f2);
 float fast_tan_pade55(float x);
+float fast_sin_pade55(float x);
+float fast_cos_pade55(float x);
