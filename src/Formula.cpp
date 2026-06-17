@@ -88,6 +88,7 @@ struct FrankBussFormulaModule : Module {
 	float formulaM;
 	float formulaL;
 	float formulaS;
+	float formulaR;
 
 	// locals but time delayed for breaking loops of reference
 	float freqLast[PORT_MAX_CHANNELS] = { 0.0f };
@@ -171,6 +172,7 @@ struct FrankBussFormulaModule : Module {
 					formulaC = (float)(c + 1); // assign channel index * something
 					formulaF = freqLast[c]; // frquency
 					formulaL = freqLast[c] * lowpass;
+					formulaR = args.sampleRate;
 
 					if (freqFormulaEnabled) {
 						auto freq = evalFormula(freqFormula);
@@ -258,6 +260,7 @@ struct FrankBussFormulaModule : Module {
 		formula.setVariable("m", &formulaM);// number of channels-ish
 		formula.setVariable("l", &formulaL);// LFO
 		formula.setVariable("s", &formulaS);// sub oscillation bipolar
+		formula.setVariable("r", &formulaR);// sample rate
 
 		formula.setExpression(expr);
 	}

@@ -22,6 +22,7 @@
 // randoms
 std::normal_distribution<float> noise;
 std::exponential_distribution<float> expo;
+std::poisson_distribution<int> poisson(1.0f);
 std::linear_congruential_engine<unsigned int, 3, 561, 0> noiseEngine;
 
 float ParserNoise(float gain)
@@ -32,6 +33,11 @@ float ParserNoise(float gain)
 float ParserExpo(float gain)
 {
 	return expo(noiseEngine) * gain;
+}
+
+float ParserPoisson(float gain)
+{
+	return poisson(noiseEngine) * gain;
 }
 
 float ParserUni(float max)
@@ -101,6 +107,7 @@ Parser::Parser(std::string expression)
 	setFunction("nor", ParserNoise);// Normal distribution
 	setFunction("uni", ParserUni);// Uniform distribution
 	setFunction("exd", ParserExpo);// Exponential distribution
+	setFunction("poi", ParserPoisson);// Poisson distribution
 
 	setExpression(expression);
 }
