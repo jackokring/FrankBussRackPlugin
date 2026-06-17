@@ -103,7 +103,8 @@ struct FrankBussFormulaModule : Module {
 		configButton(B_0_PARAM, "Variable 'b': 0");
 		configButton(B_1_PARAM, "Variable 'b': 1");
 		configParam(KNOB_PARAM, -1.0f, 1.0f, 0.0f, "Variable 'k'");
-		configParam(CHANNELS_PARAM, 0.5f, PORT_MAX_CHANNELS + 0.5f, 1.0f, "Channels 'm'");
+		// save a few cycles for the area and the miners
+		configParam(CHANNELS_PARAM, 0.51f, PORT_MAX_CHANNELS + 0.49f, 1.0f, "Channels 'm'");
 		configParam(LOWPASS_PARAM, -4.0f, 4.0f, 0.0f, "Lowpass 'l'");
 		configButton(CLAMP_PARAM, "Clamp to -5V/+5V");
 
@@ -140,7 +141,7 @@ struct FrankBussFormulaModule : Module {
 
 		// evaluate channels
 		formulaM = (params[CHANNELS_PARAM].getValue() + 0.5f);
-		int channels = (((int)formulaM - 1) & 0xf) + 1;
+		int channels = (int)(formulaM + 0.5f);
 
 		int channelsW = max(inputs[W_INPUT].getChannels(), 1);
 		int channelsX = max(inputs[X_INPUT].getChannels(), 1);

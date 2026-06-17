@@ -14,24 +14,29 @@
 #include "../UnofficialFrank.hpp"
 #include "engine/Port.hpp"
 
+#include <climits>
 #include <cmath>
 #include <math.h>
-#include <time.h>
+#include <random>
 
+// randoms
+std::normal_distribution<float> noise;
+std::exponential_distribution<float> expo;
+std::linear_congruential_engine<unsigned int, 3, 561, 0> noiseEngine;
 
-float ParserMax(float argument1, float argument2)
+float ParserNoise(float gain)
 {
-	return argument1 > argument2 ? argument1 : argument2;
+	return noise(noiseEngine) * gain;
 }
 
-float ParserMin(float argument1, float argument2)
+float ParserExpo(float gain)
 {
-	return argument1 < argument2 ? argument1 : argument2;
+	return expo(noiseEngine) * gain;
 }
 
-float ParserTime()
+float ParserUni(float max)
 {
-	return time(NULL);
+	return ((float)noiseEngine() / UINT_MAX) * max;
 }
 
 float ParserPar(float phase)
@@ -51,7 +56,7 @@ float ParserRing(float value)
 	return value;
 }
 
-float ParseResolve(float index)
+float ParserResolve(float index)
 {
 	return ring[(unsigned int)((tail = (tail + 1) % PORT_MAX_CHANNELS)
 	    - 1 + (int)(index + 0.5f)) % PORT_MAX_CHANNELS];
@@ -82,8 +87,8 @@ Parser::Parser(std::string expression)
 	setFunction("sqrt", sqrtf);
 	setFunction("ceil", ceilf);
 	setFunction("floor", floorf);
-	setFunction("max", ParserMax);
-	setFunction("min", ParserMin);
+	setFunction("max", fmaxf);
+	setFunction("min", fminf);
 
 	// oldies
 	setFunction("expm1", expm1);
@@ -92,7 +97,10 @@ Parser::Parser(std::string expression)
 	// new
 	setFunction("par", ParserPar);// Parabolic
 	setFunction("que", ParserRing);// Queue
-	setFunction("unq", ParseResolve);// Unqueue
+	setFunction("unq", ParserResolve);// Unqueue
+	setFunction("nor", ParserNoise);// Normal distribution
+	setFunction("uni", ParserUni);// Uniform distribution
+	setFunction("exd", ParserExpo);// Exponential distribution
 
 	setExpression(expression);
 }

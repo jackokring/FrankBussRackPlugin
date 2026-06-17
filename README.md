@@ -27,10 +27,13 @@ Simplicity is often the key to a good module.
 - [X] `s` is for suboscillation multiplier (for unipolar signals like `par(p)`)
 - [X] `par(p)` is for parabolic phase `4*p*(1-p)`
 - [X] queing and unquing to `PORT_MAX_CHANNELS` (crosstalk)
- - [X] `que(x)` is for queuing (`que` evaluates to `x`)
- - [X] `unq(i)` is for unqueueing (index `i` is tail offset, 0 for tail)
-- [X] `expm1(x)` is for `exp(x) - 1` (zero DC audio bias)
-- [X] `log1p(x)` is for `log(1 + x)` (zero DC audio bias)
+  - [X] `que(x)` is for queuing (`que` evaluates to `x`)
+  - [X] `unq(i)` is for unqueueing (index `i` is tail offset, 0 for tail)
+- [X] `expm1(x)` is for `exp(x) - 1` (zero-er DC audio bias)
+- [X] `log1p(x)` is for `log(1 + x)` (zero-er DC audio bias)
+- [X] `nor(gain)` is for normal Gaussian noise
+- [X] `uni(gain)` is for uniform distribution (0 to `gain`)
+- [X] `exd(gain)` is for exponential distribution
 - [X] fuzzy equality/inequality (within 1 V)
 - [X] optimized and threaded
 - [X] new front panel layout
@@ -42,3 +45,6 @@ This is a modulation source. Using `f` or `l` in the frequency formula (lower te
 might sometimes be good, but can lead to very high frequencies at large amplitudes.
 You are advised to place a lowpass filter after this module if you are listening
 to the output directly, as the high-frequency artifacts can be very loud.
+
+Quick shortcut names left: `a`, `d`, `g`, `h`, `i`, `j`, `n`, `o`, `q`, `r`, `t`, `u`, `v`.
+Then it's capital letters: `A`, `B`, `C`, `D`, `E`, `F`, `G`, `H`, `I`, `J`, `K`, `L`, `M`, `N`, `O`, `P`, `Q`, `R`, `S`, `T`, `U`, `V`, `W`, `X`, `Y`, `Z` (or `_`).

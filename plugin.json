@@ -17,6 +17,7 @@
       "slug": "Formula",
       "name": "Formula",
       "description": "Formula for CV and audio",
+      "manualUrl": "https://github.com/jackokring/UnofficialFrank/blob/master/README.md#frank-buss",
       "tags": ["Utility", "Polyphonic"]
     }
   ]
